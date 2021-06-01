@@ -1,0 +1,22 @@
+language: generic
+
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t btfjulio/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true btfjulio/react-test npm test
+
+after_sucess:
+  - docker build -t btfjulio/complex-client ./client
+  - docker build -t btfjulio/complex-nginx ./nginx
+  - docker build -t btfjulio/complex-server ./server
+  - docker build -t btfjulio/complex-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push btfjulio/complex-client
+  - docker push btfjulio/complex-nginx
+  - docker push btfjulio/complex-server
+  - docker push btfjulio/complex-worker
